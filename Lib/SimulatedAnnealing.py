@@ -23,14 +23,12 @@ class SimulatedAnnealing:
         self.energy = energy_fnc
         self.perturb = perturb_fnc
         self.objective = obj_fnc
-        # Energia iniziale del sistema massima E0
-        # self.curr_energy = float("inf")
         self.boltz_const = 8.61673324 * pow(10, -5)
-        self.boltz_const = 0.02
         self.cooling_schedule = 0.9
         # Valori delle soluzioni che vado trovando
         self.scores = []
         self.temps = []
+
 
     # Plotta le performance dell'algoritmo di simulated annealing
     def plot_performance(self, xlab, ylab, scale=1):
@@ -41,7 +39,8 @@ class SimulatedAnnealing:
         plt.grid(True)
         plt.show()
 
-    def run(self,debug = False):
+    # Esegue il simulated annealing
+    def run(self, debug=False):
         good_sol_vec = self.curr_sol
         good_sol_val = self.objective(self.curr_sol)
         # Eseguo fin tanto che non sono arrivato alla configurazione

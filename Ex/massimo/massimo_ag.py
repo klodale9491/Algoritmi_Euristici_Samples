@@ -19,8 +19,8 @@ def fitness_cmp(val_1,val_2):
 def remap(value,low1,high1,low2,high2):
     return low2 + (value - low1) * (high2 - low2) / (high1 - low1)
 
-GA = GeneticAlgorithm(fitness,fitness_cmp,0,1,100,12,0.75)
-max,sol = GA.run(gen=50, pc=0.5, pm=0.05, debug = True)
-GA.plot_performance('generations','max')
-print(['max = ',max])
-print(['sol = ',sol])
+GA = GeneticAlgorithm(fitness,fitness_cmp,0,1,100,12)
+max,sol = GA.run(gen=100, pc=0.8, pm=0.01, debug = True)
+GA.plot_performance('generations', 'avg fitness')
+print(['max = ', max])
+print(['sol = ', sol])

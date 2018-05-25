@@ -1,7 +1,9 @@
 # Import sulla directory delle librerie
+
 import sys
 import csv
 from random import randint
+from math import pow
 
 sys.path.append('../../Lib')
 from SimulatedAnnealing import SimulatedAnnealing
@@ -11,7 +13,7 @@ N_JOBS = 800
 
 # Leggo dati dal DB
 def leggi_dati():
-    with open('dataset.csv', 'rb') as csvfile:
+    with open('dataset.csv', 'r') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
         dataset = []
         for row in spamreader:
@@ -47,6 +49,7 @@ def obj_function(x):
 # 40 righe X 800 colonne
 dataset = leggi_dati()
 x0 = greedy_sol(dataset)
-SA = SimulatedAnnealing(x0, 1.0, 0.0001, 300, obj_function, energy, perturb_sol)
+SA = SimulatedAnnealing(x0, 1.0, pow(10, -20), 300, obj_function, energy, perturb_sol)
 SA.run(debug=True)
 SA.plot_performance('temperature', 'total cpu time')
+print(['greedy_col = ', energy(x0)])

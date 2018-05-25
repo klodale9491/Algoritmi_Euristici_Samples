@@ -1,17 +1,13 @@
 # Import sulla directory delle librerie
+
 import sys
 import csv
-
-
 sys.path.append('../../Lib')
 from GeneticAlgorithm import GeneticAlgorithm
 
-N_CPU = 40
-N_JOBS = 800
-
 # Leggo dati dal DB
 def leggi_dati():
-    with open('dataset.csv', 'rb') as csvfile:
+    with open('dataset.csv', 'r') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
         dataset = []
         for row in spamreader:
@@ -21,15 +17,22 @@ def leggi_dati():
             dataset.append(myrow)
     return dataset
 
-def fitness(sol):
-    return sum([float(dataset[sol[j]][j]) for j in range(len(sol)-1)])
+def fitness(x):
+    return sum([float(dataset[x[i]][i]) for i in range(len(x))])
 
 def fitness_cmp(fit1,fit2):
-    return 1 if fit1 < fit2 else 0
+    return 1 if fit1 < fit2 else 2
 
+N_CPU = 40
+N_JOBS = 800
 dataset = leggi_dati()
-GA = GeneticAlgorithm(fitness, fitness_cmp, min_val_gene=0, max_val_gene=39, pop_len=100, sol_len=800, srv_prc=0.5)
-time,sol = GA.run(gen=100, pc=0.5, pm=0.05, debug = True)
-GA.plot_performance('generations','total time')
-print(['time = ',time])
-print(['sol = ' ,sol])
+
+def main():
+    GA = GeneticAlgorithm(fitness, fitness_cmp, min_val_gene=0, max_val_gene=39, pop_len=1000, sol_len=800)
+    time, sol = GA.run(gen=10000, pc=0.8, pm=0.01, debug=True)
+    GA.plot_performance('generations', 'total time')
+    print(['time = ', time])
+    print(['sol = ', sol])
+
+if __name__=="__main__":
+    main()
