@@ -28,9 +28,9 @@ N_JOBS = 800
 dataset = leggi_dati()
 
 def main():
-    GA = GeneticAlgorithm(fitness, fitness_cmp, min_val_gene=0, max_val_gene=39, pop_len=1000, sol_len=800)
-    time, sol = GA.run(gen=10000, pc=0.8, pm=0.01, debug=True)
-    GA.plot_performance('generations', 'total time')
+    GA = GeneticAlgorithm(fitness, fitness_cmp, min_val_gene=0, max_val_gene=39, pop_len=100, sol_len=800)
+    time, sol = GA.run(gen=10000, pc=0.7, pm=1/800, debug=True)
+    GA.plot_performance('fit variance', 'total time')
     print(['time = ', time])
     print(['sol = ', sol])
 

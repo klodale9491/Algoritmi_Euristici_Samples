@@ -90,11 +90,12 @@ class GeneticAlgorithm:
             self.solutions.append(sol)
 
     # Funzione che effettua crossover a due punti della soluzione
-    def crossover2(self, sol_1, sol_2, pieces=3):
-        frg_len = int(len(sol_1) / 3)
+    def crossover2(self, sol_1, sol_2):
+        pnt_1 = randint(0,len(sol_1)-1)
+        pnt_2 = randint(pnt_1, len(sol_1)-1)
         # Scambio dei geni ...
-        s1 = [sol_1[0:frg_len], sol_2[frg_len:2 * frg_len], sol_1[2 * frg_len:]]
-        s2 = [sol_2[0:frg_len], sol_1[frg_len:2 * frg_len], sol_2[2 * frg_len:]]
+        s1 = [sol_1[0:pnt_1], sol_2[pnt_1:pnt_2], sol_1[pnt_2:]]
+        s2 = [sol_2[0:pnt_1], sol_1[pnt_1:pnt_2], sol_2[pnt_2:]]
         # Ricompongo le soluzioni
         sol_1 = []
         sol_2 = []
@@ -106,7 +107,7 @@ class GeneticAlgorithm:
 
     # Crossover ad un punto
     def crossover(self,sol_1, sol_2):
-        frg_len = int(len(sol_1) / 2)
+        frg_len = randint(0,len(sol_1)-1)
         if random() <= 0.5:
             # Scambio dei geni ...
             s1 = [sol_1[0:frg_len], sol_2[frg_len:]]
@@ -143,10 +144,7 @@ class GeneticAlgorithm:
                     if self.fitness_cmp_fnc(fitness[j], good_sol_val) == 1:
                         good_sol_val = fitness[j]
                         good_sol_vec = self.solutions[j]
-                bef_ns_fit = self.fitness_avg(self.solutions)
                 new_sol = self.natural_selection(self.surv_len)
-                aft_ns_fit = self.fitness_avg(new_sol)
-                bef_co_fit = self.fitness_avg(new_sol)
                 for i in range(len(new_sol)):
                     # Faccio incrociare gli individui in base alla loro probabilita di crossover pc
                     if pc >= random():
@@ -155,20 +153,15 @@ class GeneticAlgorithm:
                         sol_1, sol_2 = self.crossover2(sol_1, sol_2)
                         # Prendo solo una soluzione delle 2
                         new_sol.append(sol_1 if self.fitness_cmp_fnc(sol_1,sol_2) == 1 else sol_2)
-                aft_co_fit = self.fitness_avg(new_sol)
                 # Avvio le mutazioni puntuali delle soluzioni
-                bef_mt_fit = self.fitness_avg(new_sol)
                 for k in range(len(new_sol)):
                     new_sol[k] = self.mutation(new_sol[k], pm)
-                aft_mt_fit = self.fitness_avg(new_sol)
                 # Aggiorno la popolazione
-                del (self.solutions)  # Dealloca la memoria per evitare memory leak, e cali di prestazioni
                 self.solutions = [x for x in new_sol]
                 if (debug):
                     best_val, best_vec = self.fitness_bst([self.fitness_fnc(x) for x in self.solutions])
                     fit_avg = float(sum([self.fitness_fnc(self.solutions[i]) for i in range(len(self.solutions))]))/len(self.solutions)
-                    # print(['iterazione #', g, 'good_sol = ', good_sol_val, 'fit_average = ', fit_avg, 'pop = ', len(self.solutions)])
-                    print(['before_nat_sel : ',bef_ns_fit,'after_nat_sel :',aft_ns_fit,'before_crsover : ',bef_co_fit,'after_crsover :',aft_co_fit,'before_mut : ',bef_mt_fit,'after_mut_sel :',aft_mt_fit])
+                    print('good_sol_val: ',best_val,'fit_avg', fit_avg)
                     self.times.append(g)
                     self.scores.append(fit_avg)
         return good_sol_val, good_sol_vec
