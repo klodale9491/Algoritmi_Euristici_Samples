@@ -2,8 +2,6 @@
 
 from random import randint
 from random import random
-from random import seed
-from time import time
 import matplotlib.pyplot as plt
 
 
@@ -26,11 +24,12 @@ class GeneticAlgorithm:
         self.sol_len = sol_len
         self.surv_len = pop_len
         # Popolazione delle soluzioni
-        self.solutions = []
+        self.population = []
         self.random_population()
         # Performarce algoritmo
         self.times = []
         self.scores = []
+
 
     # Plotta le performance dell'algoritmo genetico
     def plot_performance(self,xlab,ylab):
@@ -41,6 +40,7 @@ class GeneticAlgorithm:
         plt.grid(True)
         plt.show()
 
+
     # Trova la migliore fitness tornando la soluzione
     # ed il suo valore
     def fitness_bst(self,fits):
@@ -50,44 +50,32 @@ class GeneticAlgorithm:
                 best_index = i
         return fits[best_index],best_index
 
-    # Trova la peggiore fitness tornando la soluzione
-    # ed il suo valore
-    def fitness_wst(self, fits):
-        worst_index = 0
-        for i in range(1, len(fits)):
-            if self.fitness_cmp_fnc(fits[i], fits[worst_index]) == 0:
-                worst_index = i
-        return fits[worst_index], worst_index
-
-    # Fitness media della popolazione
-    def fitness_avg(self,pop):
-        return float(sum([self.fitness_fnc(pop[i]) for i in range(len(pop))]))/float(len(pop))
 
     # Funzione di selezione naturale in base al metodo a TORNEO
     # Permette di far sopravvivere una percentuale delle solzioni
     def natural_selection(self, N):
         new_pop = []
-        seed(time())
         for i in range(N):
             # Scelgo a caso due elementi della popolazione e verifico chi sia il migliore aggiunggendoli
             # alla nuova popolazione.
-            sol_1 = self.solutions[randint(0, len(self.solutions)) - 1]
-            sol_2 = self.solutions[randint(0, len(self.solutions)) - 1]
+            sol_1 = self.population[randint(0, len(self.population)) - 1]
+            sol_2 = self.population[randint(0, len(self.population)) - 1]
             if self.fitness_cmp_fnc(self.fitness_fnc(sol_1), self.fitness_fnc(sol_2)) == 1:
                 new_pop.append(sol_1)
             else:
                 new_pop.append(sol_2)
         return new_pop
 
+
     # Funzione che crea una popolazione random di soluzioni
     def random_population(self):
-        seed(time())
         # Creo soluzioni di taglia sol_len
         for i in range(self.pop_len):
             sol = []
             for j in range(self.sol_len):
                 sol.append(randint(self.min_val_gene, self.max_val_gene))
-            self.solutions.append(sol)
+            self.population.append(sol)
+
 
     # Funzione che effettua crossover a due punti della soluzione
     def crossover2(self, sol_1, sol_2):
@@ -105,17 +93,12 @@ class GeneticAlgorithm:
                 sol_2.append(s2[i][j])
         return sol_1, sol_2
 
+
     # Crossover ad un punto
-    def crossover(self,sol_1, sol_2):
-        frg_len = randint(0,len(sol_1)-1)
-        if random() <= 0.5:
-            # Scambio dei geni ...
-            s1 = [sol_1[0:frg_len], sol_2[frg_len:]]
-            s2 = [sol_2[0:frg_len], sol_1[frg_len:]]
-        else:
-            # Scambio dei geni ...
-            s1 = [sol_2[0:frg_len], sol_1[frg_len:]]
-            s2 = [sol_1[0:frg_len], sol_2[frg_len:]]
+    def crossover(self, sol_1, sol_2):
+        frg_len = randint(1,len(sol_1)-1)
+        s1 = [sol_1[0:frg_len], sol_2[frg_len:]]
+        s2 = [sol_2[0:frg_len], sol_1[frg_len:]]
         # Ricompongo le soluzioni
         sol_1 = []
         sol_2 = []
@@ -123,7 +106,8 @@ class GeneticAlgorithm:
             for j in range(len(s1[i])):
                 sol_1.append(s1[i][j])
                 sol_2.append(s2[i][j])
-        return sol_1, sol_2
+        return sol_1 if(self.fitness_cmp_fnc(sol_1,sol_2) == 1) else sol_2
+
 
     # Funzione che simula una mutazione puntuale di un gene
     def mutation(self, sol, pm):
@@ -132,36 +116,29 @@ class GeneticAlgorithm:
                 sol[i] = randint(self.min_val_gene, self.max_val_gene)
         return sol
 
+
     # Main routine dell'algoritmo genetico
     def run(self, gen, pc=0.5, pm=0.05, debug=False):
-        good_sol_val = self.fitness_fnc(self.solutions[0])
-        good_sol_vec = self.solutions[0]
+        good_sol = self.population[0]
         for g in range(gen):
-            if len(self.solutions) > 1:
-                fitness = [self.fitness_fnc(self.solutions[i]) for i in range(len(self.solutions))]
-                # Salvo le buone soluzioni per non perderle per strada
-                for j in range(len(fitness)):
-                    if self.fitness_cmp_fnc(fitness[j], good_sol_val) == 1:
-                        good_sol_val = fitness[j]
-                        good_sol_vec = self.solutions[j]
-                new_sol = self.natural_selection(self.surv_len)
-                for i in range(len(new_sol)):
-                    # Faccio incrociare gli individui in base alla loro probabilita di crossover pc
-                    if pc >= random():
-                        sol_1 = self.solutions[i]
-                        sol_2 = self.solutions[randint(0, len(self.solutions) - 1)]
-                        sol_1, sol_2 = self.crossover2(sol_1, sol_2)
-                        # Prendo solo una soluzione delle 2
-                        new_sol.append(sol_1 if self.fitness_cmp_fnc(sol_1,sol_2) == 1 else sol_2)
-                # Avvio le mutazioni puntuali delle soluzioni
-                for k in range(len(new_sol)):
-                    new_sol[k] = self.mutation(new_sol[k], pm)
-                # Aggiorno la popolazione
-                self.solutions = [x for x in new_sol]
-                if (debug):
-                    best_val, best_vec = self.fitness_bst([self.fitness_fnc(x) for x in self.solutions])
-                    fit_avg = float(sum([self.fitness_fnc(self.solutions[i]) for i in range(len(self.solutions))]))/len(self.solutions)
-                    print('good_sol_val: ',best_val,'fit_avg', fit_avg)
-                    self.times.append(g)
-                    self.scores.append(fit_avg)
-        return good_sol_val, good_sol_vec
+            fitness = [self.fitness_fnc(self.population[i]) for i in range(len(self.population))]
+            # Selezione naturale
+            new_population = self.natural_selection(self.surv_len)
+            # Crossover
+            for i in range(len(new_population)):
+                if pc >= random():
+                    sol = self.crossover(self.population[i], self.population[randint(0, len(self.population) - 1)])
+                    new_population.append(sol)
+            # Mutazioni
+            for k in range(len(new_population)):
+                new_population[k] = self.mutation(new_population[k], pm)
+            # Aggiornamento della popolazione
+            self.population[:] = new_population[:]
+            if (debug):
+                best_val, best_vec = self.fitness_bst(fitness)
+                fit_avg = sum(fitness) / len(fitness)
+                self.times.append(g)
+                self.scores.append(fit_avg)
+                if g % 100 == 0:
+                    print('generation #', g, 'good_sol_val: ', best_val, 'fit_avg: ', fit_avg)
+        return good_sol
